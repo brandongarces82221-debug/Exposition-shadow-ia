@@ -1,0 +1,15 @@
+# Terraform: estado y caché local (pueden contener datos sensibles)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+.terraform.tfstate.lock.info
+
+# Python / sistema
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+~$*
