@@ -51,8 +51,8 @@ resource "aws_iam_role_policy" "agente" {
         ]
       },
       {
-        Effect = "Allow"
-        Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"]
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Query"]
         Resource = [aws_dynamodb_table.trabajos.arn, aws_dynamodb_table.conversaciones.arn]
       },
     ]
