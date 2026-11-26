@@ -17,7 +17,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 REGION = os.environ.get("AWS_REGION", "us-east-1")
-MODEL_ID = os.environ.get("MODEL_ID", "anthropic.claude-haiku-5-5")
+# Perfil de inferencia global de Claude Haiku 4.5 (endpoint bedrock-runtime).
+MODEL_ID = os.environ.get("MODEL_ID", "global.anthropic.claude-haiku-4-5-20251001-v1:0")
 GUARDRAIL_ID = os.environ.get("GUARDRAIL_ID", "")
 GUARDRAIL_VERSION = os.environ.get("GUARDRAIL_VERSION", "DRAFT")
 SECRET = os.environ.get("SECRET_CODE", "DRAGON-7731")
@@ -40,9 +41,11 @@ stats_lock = threading.Lock()
 
 if not MOCK:
     import boto3
-    from anthropic import AnthropicBedrockMantle
+    # Cliente clásico de Bedrock (InvokeModel). Haiku 4.5 requiere el SDK anthropic < 2:
+    # la 2.x envía la versión de API 2026-10-21, que Bedrock solo acepta en modelos 4.7+.
+    from anthropic import AnthropicBedrock
 
-    claude = AnthropicBedrockMantle(aws_region=REGION)
+    claude = AnthropicBedrock(aws_region=REGION)
     bedrock = boto3.client("bedrock-runtime", region_name=REGION)
 
 
@@ -99,7 +102,6 @@ def llamar_modelo(system: str, mensajes: list) -> str:
         max_tokens=1024,
         system=system,
         messages=mensajes,
-        output_config={"effort": "low"},  # barato y rápido para una demo
     )
     if msg.stop_reason == "refusal":
         return "(El modelo se negó a responder.)"

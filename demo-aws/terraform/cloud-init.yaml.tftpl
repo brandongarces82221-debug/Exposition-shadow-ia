@@ -33,6 +33,6 @@ runcmd:
   - dnf install -y python3.11 python3.11-pip
   - python3.11 -m venv /opt/demo/venv
   - /opt/demo/venv/bin/pip install --upgrade pip
-  - /opt/demo/venv/bin/pip install "anthropic[bedrock]" boto3 qrcode
+  - /opt/demo/venv/bin/pip install "anthropic[bedrock]>=1.17,<2" boto3 qrcode
   - systemctl daemon-reload
   - systemctl enable --now demo

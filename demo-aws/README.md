@@ -8,7 +8,7 @@ Hay dos rondas con el **mismo modelo y el mismo prompt**: primero sin protecció
 Navegador (curso) ──HTTP──► EC2 t3.micro (VPC por defecto)
                                │  app.py
                                ├─► Bedrock Guardrails  (revisa entrada y salida)
-                               └─► Claude Haiku 5.5 en Bedrock
+                               └─► Claude Haiku 4.5 en Bedrock
 ```
 
 ## Qué crea Terraform
@@ -25,7 +25,7 @@ No se crean VPC, subredes, NAT ni balanceadores.
 ## Costo aproximado
 
 - EC2 `t3.micro`: ~US$0.01 por hora (entra en la capa gratuita) + IP pública ~US$0.005 por hora
-- Claude Haiku 5.5: ~US$0.10 por millón de tokens de entrada; una clase completa cuesta centavos
+- Claude Haiku 4.5: ~US$1 por millón de tokens de entrada y ~US$5 por millón de salida; una clase completa usa unos pocos miles de tokens (centavos)
 - Guardrails: se cobra por texto revisado; una clase cuesta centavos
 
 **Tenerla prendida durante la exposición cuesta menos de US$0.10. Destrúyela al terminar.**
@@ -34,7 +34,10 @@ No se crean VPC, subredes, NAT ni balanceadores.
 
 1. Instalar [Terraform](https://developer.hashicorp.com/terraform/install) y la [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 2. Ejecutar `aws configure` con un usuario que tenga permisos de administrador.
-3. Habilitar el modelo **Claude Haiku 5.5** en la consola: *Amazon Bedrock → Model access*, en `us-east-1`.
+3. Tener habilitado **Claude Haiku 4.5** en Amazon Bedrock (`us-east-1`). Se usa por el perfil de inferencia
+   `global.anthropic.claude-haiku-4-5-20251001-v1:0`. Para comprobarlo:
+   `aws bedrock get-foundation-model-availability --model-id anthropic.claude-haiku-4-5-20251001-v1:0`
+   debe mostrar `agreementAvailability` en `AVAILABLE`.
    La primera vez, AWS puede pedir un formulario corto de caso de uso.
 
 ## Levantar
@@ -87,6 +90,7 @@ MOCK=1 PORT=8000 python3 app.py
 | Síntoma | Solución |
 |---|---|
 | La página no abre después de 3 minutos | En la consola de EC2, abre la instancia, *Connect → Session Manager* y ejecuta `sudo journalctl -u demo -n 50` |
-| Error `AccessDenied` o modelo no disponible | Falta habilitar Claude Haiku 5.5 en *Bedrock → Model access* |
+| Error `AccessDenied` o modelo no disponible | Revisar que Claude Haiku 4.5 esté habilitado en Bedrock (paso 3 de Requisitos) |
+| Quieres usar otro modelo | `terraform apply -var 'model_id=...'` con un ID de `bedrock-runtime` habilitado en tu cuenta. Con modelos 4.7 o posteriores también se puede usar el SDK 2.x |
 | Quieres otro código secreto | `terraform apply -var 'secret_code=FENIX-2026'` |
 | Quieres otra región | `terraform apply -var 'region=us-east-2'` |

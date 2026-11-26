@@ -123,9 +123,10 @@ resource "aws_iam_role_policy" "bedrock" {
     Version = "2012-10-17"
     Statement = [
       {
+        # Perfil de inferencia global: puede enrutar a cualquier región, por eso "*"
         Sid      = "Modelo"
         Effect   = "Allow"
-        Action   = ["bedrock-mantle:CreateInference"]
+        Action   = ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"]
         Resource = "*"
       },
       {

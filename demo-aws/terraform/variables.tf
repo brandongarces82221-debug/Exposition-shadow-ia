@@ -13,7 +13,7 @@ variable "instance_type" {
 variable "model_id" {
   description = "Modelo de Claude en Bedrock (Haiku es el más barato)"
   type        = string
-  default     = "anthropic.claude-haiku-5-5"
+  default     = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
 
 variable "secret_code" {
