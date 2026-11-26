@@ -64,7 +64,7 @@ encendido, así que `terraform destroy` al terminar es parte del diseño.
 | 1 | **AWS Fargate** | Agente | Linux, x86 · Number of tasks: 1 por mes · Average duration: 730 hours · vCPU: 0.25 · Memory: 0.5 GB · Ephemeral storage: 20 GB |
 | 2 | **AWS Fargate** | Sandbox | Linux, x86 · Number of tasks: 1 por mes · Average duration: 730 hours · vCPU: 0.5 · Memory: 1 GB · Ephemeral storage: 20 GB |
 | 3 | **Amazon Virtual Private Cloud (VPC)** | Endpoints e IPv4 | VPC Endpoints → Interface endpoints: Number of VPC interface endpoints per AZ: 3 · Number of AZs: 1 · Data processed: 1 GB por mes. Public IPv4 Addresses → In-use public IPv4 addresses: 1 |
-| 4 | **Amazon Bedrock** | Claude Haiku 4.5 | Model provider: Anthropic · Model: Claude Haiku 4.5 · On-demand · Number of requests: 1 000 por mes · Average input tokens per request: 12 000 · Average output tokens per request: 2 000 |
+| 4 | **Amazon Bedrock** | Claude Haiku 4.5 | Model provider: Anthropic · Model: Claude Haiku 4.5 · Inference route: Global · On Demand - Standard · Average requests per minute: 1 · Hours per day: 1 · Average input tokens per request: 6 667 · Average output tokens per request: 1 111 (ver nota) |
 | 5 | **AWS Lambda** | `archivos` y `trabajos` | Architecture: x86 · Number of requests: 50 000 por mes · Duration: 100 ms · Memory: 256 MB · Ephemeral storage: 512 MB |
 | 6 | **Amazon API Gateway** | HTTP API | HTTP APIs → Requests: 60 000 por mes · Average size: 4 KB |
 | 7 | **Amazon DynamoDB** | `trabajos` y `conversaciones` | On-Demand · Data storage: 1 GB · Write request units: 20 000 por mes · Read request units: 60 000 por mes |
@@ -75,9 +75,28 @@ encendido, así que `terraform destroy` al terminar es parte del diseño.
 Supuestos de uso de las líneas 5–8 para ~1 000 preguntas al mes: cada pregunta consulta su estado cada 1,5 s durante
 ~30 s (≈ 20 llamadas a `trabajos`), más las subidas de CSV.
 
+**Nota sobre Bedrock:** la calculadora no acepta menos de 1 solicitud por minuto ni horas con decimales, así que
+1 000 preguntas × (12 000 tokens de entrada + 2 000 de salida) se expresa como 1 solicitud/min × 1 h/día × 30 días
+= 1 800 solicitudes de 6 667 tokens de entrada y 1 111 de salida. Da lo mismo: 12 M de entrada + 2 M de salida = US$22,00.
+
 3. **Save and share** → copia el enlace público y pégalo aquí:
 
-**Enlace de la estimación:** _(pendiente — pegar aquí el enlace de calculator.aws)_
+**Enlace de la estimación:** <https://calculator.aws/#/estimate?id=e8a819d787a858744dc31b2b9ea11d3f88c76451>
+
+Resultado en la calculadora (26/11/2026): **US$75,63 al mes** · US$907,56 en 12 meses · sin pago inicial.
+
+| # | Línea | Mensual |
+|---|---|---|
+| 1 | Fargate sandbox | US$18,03 |
+| 2 | Fargate agente | US$9,01 |
+| 3 | VPC (endpoints + IPv4) | US$25,56 |
+| 4 | Bedrock Haiku 4.5 | US$22,00 |
+| 5 | Lambda | US$0,00 (capa gratuita) |
+| 6 | API Gateway | US$0,06 |
+| 7 | DynamoDB | US$0,30 |
+| 8 | S3 | US$0,07 |
+| 9 | ECR | US$0,10 |
+| 10 | CloudWatch Logs | US$0,50 |
 
 Si la calculadora da un total distinto al de la tabla de escenarios, manda la calculadora: puede incluir la capa gratuita
 de otra forma o tener un precio actualizado.
