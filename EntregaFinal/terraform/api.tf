@@ -48,12 +48,12 @@ resource "aws_apigatewayv2_vpc_link" "agente" {
 }
 
 resource "aws_apigatewayv2_integration" "agente" {
-  api_id             = aws_apigatewayv2_api.http.id
-  integration_type   = "HTTP_PROXY"
-  integration_method = "POST"
-  connection_type    = "VPC_LINK"
-  connection_id      = aws_apigatewayv2_vpc_link.agente.id
-  integration_uri    = aws_service_discovery_service.agente.arn
+  api_id               = aws_apigatewayv2_api.http.id
+  integration_type     = "HTTP_PROXY"
+  integration_method   = "POST"
+  connection_type      = "VPC_LINK"
+  connection_id        = aws_apigatewayv2_vpc_link.agente.id
+  integration_uri      = aws_service_discovery_service.agente.arn
   timeout_milliseconds = 10000
 }
 
