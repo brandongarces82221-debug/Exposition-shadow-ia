@@ -55,7 +55,7 @@ EntregaFinal/
 
 ---
 
-### Tarea 1: Sandbox (ejecutor + servidor + imagen)
+### Task 1 (Tarea 1): Sandbox (ejecutor + servidor + imagen)
 
 **Archivos:** crear `app/sandbox/ejecutor.py`, `servidor.py`, `Dockerfile`, `test_ejecutor.py`, `app/requirements-dev.txt`.
 
@@ -78,7 +78,7 @@ EntregaFinal/
 - [ ] **Paso 5: `servidor.py` y `Dockerfile`** (`python:3.12-slim`, pandas, matplotlib, boto3; usuario `ejecutor` sin privilegios; `EXPOSE 8080`). Verificar: `docker build -t sandbox-local EntregaFinal/app/sandbox` termina OK y `docker run --rm -d -p 8080:8080 -e BUCKET_DATOS=x sandbox-local` + `curl localhost:8080/salud` → `{"ok": true}`.
 - [ ] **Paso 6: commit** `"EntregaFinal: sandbox que ejecuta Python aislado"`.
 
-### Tarea 2: Agente (almacén, ciclo agéntico, servidor, imagen)
+### Task 2 (Tarea 2): Agente (almacén, ciclo agéntico, servidor, imagen)
 
 **Archivos:** crear `app/agente/almacen.py`, `agente.py`, `servidor.py`, `Dockerfile`, `test_almacen.py`, `test_agente.py`.
 
@@ -105,7 +105,7 @@ EntregaFinal/
 - [ ] **Paso 5: `Dockerfile`** (`python:3.12-slim`, `anthropic[bedrock]>=1.17,<2`, boto3). Verificar `docker build` OK.
 - [ ] **Paso 6: commit** `"EntregaFinal: agente con ciclo de herramientas y memoria"`.
 
-### Tarea 3: Lambdas `archivos` y `trabajos`
+### Task 3 (Tarea 3): Lambdas `archivos` y `trabajos`
 
 **Archivos:** crear `app/lambdas/archivos.py`, `trabajos.py`, `test_lambdas.py`.
 
@@ -119,7 +119,7 @@ EntregaFinal/
 - [ ] **Paso 4:** `pytest EntregaFinal/app/lambdas -v` → PASA.
 - [ ] **Paso 5: commit** `"EntregaFinal: Lambdas de archivos y trabajos"`.
 
-### Tarea 4: Página web y CSV de ejemplo
+### Task 4 (Tarea 4): Página web y CSV de ejemplo
 
 **Archivos:** crear `web/index.html`, `web/app.js`, `web/estilos.css`, `datos-ejemplo/ventas.csv`, `app/dev/api_falsa.py`.
 
@@ -131,7 +131,7 @@ EntregaFinal/
 - [ ] **Paso 4: verificar** con `python3 EntregaFinal/app/dev/api_falsa.py` y captura de Chrome sin interfaz gráfica a 1280 px y 390 px: se ven los pasos, el código plegable y la gráfica; sin desborde horizontal.
 - [ ] **Paso 5: commit** `"EntregaFinal: página del chat y datos de ejemplo"`.
 
-### Tarea 5: Terraform
+### Task 5 (Tarea 5): Terraform
 
 **Archivos:** crear `terraform/proveedores.tf`, `variables.tf`, `red.tf`, `datos.tf`, `ecr.tf`, `iam.tf`, `ecs.tf`, `api.tf`, `lambdas.tf`, `web.tf`, `salidas.tf`.
 
@@ -151,7 +151,7 @@ Contenido fijado por el diseño (el resto lo decide el implementador):
 - [ ] **Paso 2: verificar** en el Codespace (`EntregaFinal/terraform`): `terraform fmt -check` sin salida, `terraform init` y `terraform validate` → "Success!", `terraform plan` sin errores (sin `apply`). Anotar el número de recursos del plan en el README.
 - [ ] **Paso 3: commit** `"EntregaFinal: infraestructura en Terraform"`.
 
-### Tarea 6: Costos y README
+### Task 6 (Tarea 6): Costos y README
 
 **Archivos:** crear `costos/estimacion.md`, `EntregaFinal/README.md`; actualizar el README de la raíz (fila de `EntregaFinal/`).
 
