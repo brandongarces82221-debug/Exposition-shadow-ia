@@ -197,7 +197,7 @@ con el curso: ~30 personas × ~3 preguntas ≈ 90 preguntas ≈ US$2–5 en Bedr
 EntregaFinal/
   README.md                   Cómo levantar, probar y apagar
   docs/diseno-arquitectura.md Este documento
-  arquitectura/arquitectura.drawio  Diagrama editable (draw.io); arquitectura.png es la exportación y generar_diagrama.py lo regenera
+  arquitectura/arquitectura.drawio  Diagrama editable (draw.io) con 2 páginas: vista general y vista técnica; arquitectura-general.png y arquitectura-tecnica.png son las exportaciones; generar_diagrama.py lo regenera
   costos/                     Estimación: enlace de la calculadora + tabla + capturas
   app/agente/                 Python 3.12, Dockerfile
   app/sandbox/                Python 3.12 + pandas + matplotlib, Dockerfile
