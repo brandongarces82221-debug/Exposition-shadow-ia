@@ -8,7 +8,8 @@ HERRAMIENTA = {
     "name": "ejecutar_python",
     "description": (
         "Ejecuta Python 3.12 con pandas y matplotlib. El CSV está en `entrada.csv` (directorio actual). "
-        "Guarda gráficas con `plt.savefig('salida/nombre.png')`. Imprime con `print` lo que necesites ver."
+        "Guarda gráficas con `plt.savefig('salida/nombre.png')`. Imprime con `print` lo que necesites ver. "
+        "Cada ejecución empieza de cero: importa las librerías y vuelve a leer el CSV en cada código."
     ),
     "input_schema": {
         "type": "object",
