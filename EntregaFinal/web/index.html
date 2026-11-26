@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analista de datos</title>
+  <link rel="stylesheet" href="estilos.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <header class="barra">
+    <div>
+      <h1>Analista de datos</h1>
+      <p class="sub">Sube un CSV y pregúntale en español. La IA escribe y ejecuta Python para responderte.</p>
+    </div>
+    <label class="boton" id="etiqueta-subir">
+      <input type="file" id="archivo" accept=".csv,text/csv" hidden>
+      Subir CSV
+    </label>
+  </header>
+
+  <main>
+    <div id="estado-archivo" class="estado">Todavía no has subido un archivo. Prueba con <code>datos-ejemplo/ventas.csv</code>.</div>
+    <section id="chat" aria-live="polite"></section>
+    <div id="sugerencias" class="sugerencias" hidden>
+      <button type="button">¿Qué mes vendió más?</button>
+      <button type="button">Gráfica de ventas por ciudad</button>
+      <button type="button">Ahora solo 2025</button>
+    </div>
+    <form id="formulario" class="formulario">
+      <input id="pregunta" type="text" maxlength="2000" placeholder="Sube un CSV para empezar" autocomplete="off" disabled>
+      <button id="enviar" class="boton" type="submit" disabled>Preguntar</button>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
