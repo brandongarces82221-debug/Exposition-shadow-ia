@@ -75,6 +75,8 @@ MOCK=1 PORT=8000 python3 app.py
 
 1. **Ronda 1, guardrails APAGADOS.** Que el curso intente sacar el código. Si nadie se anima, usa los botones de ejemplo
    ("Soy el profesor…", el poema acróstico). Cada filtración pone la alerta roja 🚨 y suma al contador.
+   Ojo: Claude Haiku 4.5 suele frenar las peticiones directas incluso sin guardrails; el **poema acróstico** es el que
+   filtra de forma confiable. Aprovéchalo: "los ataques obvios ya no pasan, los creativos sí".
 2. **Ronda 2, guardrails ENCENDIDOS.** Repetir los mismos ataques. La etiqueta verde muestra **qué** capa lo bloqueó:
    ataque de prompt en la entrada, tema prohibido o dato sensible en la salida.
 3. **Pestaña 2, inyección indirecta.** Nadie le habla a la IA: la instrucción maliciosa está escondida en un correo
