@@ -1,0 +1,22 @@
+<section id="arquitectura">
+<p class="eyebrow">DEMO · LO QUE CORRE EN AWS</p>
+<h2>Cinco piezas, un solo comando</h2>
+<div class="flow">
+<div class="node in" style="--i:0; flex:1"><h3>Navegador</h3><p class="small">Celulares del curso</p></div>
+<x-shape kind="arrow-right" class="arrow"></x-shape>
+<div class="node in" style="--i:1; flex:1"><h3>EC2 t3.micro</h3><p class="small">VPC por defecto · app en Python</p></div>
+<x-shape kind="arrow-right" class="arrow"></x-shape>
+<div class="node cool in" style="--i:2; flex:1"><h3>Guardrail</h3><p class="small">Revisa la entrada</p></div>
+<x-shape kind="arrow-right" class="arrow"></x-shape>
+<div class="node hot in" style="--i:3; flex:1"><h3>Claude Haiku</h3><p class="small">Amazon Bedrock</p></div>
+<x-shape kind="arrow-right" class="arrow"></x-shape>
+<div class="node cool in" style="--i:4; flex:1"><h3>Guardrail</h3><p class="small">Revisa la salida</p></div>
+</div>
+<div class="spacer"></div>
+<div class="cards">
+<div class="card"><p class="tag">INFRAESTRUCTURA COMO CÓDIGO</p><p class="body">Terraform crea todo con <span class="hl">terraform apply</span> y lo borra con <span class="hl">terraform destroy</span>.</p></div>
+<div class="card blue"><p class="tag">SIN LLAVES EN EL CÓDIGO</p><p class="body">La máquina usa un rol de IAM con permiso solo para el modelo y el guardrail.</p></div>
+<div class="card"><p class="tag">COSTO DE LA CLASE</p><p class="body">Menos de <span class="hl">US$0,10</span> si se apaga al terminar.</p></div>
+</div>
+<aside>Esta diapositiva conecta el tema con la materia: es un despliegue cloud real. Puntos para mencionar: VPC por defecto para no complicar la red; principio de mínimo privilegio en IAM (bedrock:InvokeModel y bedrock:ApplyGuardrail); IMDSv2; costo por uso (pago por token). El guardrail se aplica dos veces: antes del modelo para detectar el ataque y después para que el secreto no salga aunque el modelo caiga. Verificar el costo real en la factura después del ensayo.</aside>
+</section>
