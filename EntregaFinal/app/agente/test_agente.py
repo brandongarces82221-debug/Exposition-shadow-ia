@@ -33,9 +33,11 @@ def test_responde_sin_herramienta():
 
 def test_corta_en_6_iteraciones():
     sandbox = sandbox_ok()
-    r = responder("bucle", "1 fila", [], ModeloFalso([], siempre_herramienta=True), sandbox, lambda p: None)
+    modelo = ModeloFalso([], siempre_herramienta=True)
+    r = responder("bucle", "1 fila", [], modelo, sandbox, lambda p: None)
     assert len(sandbox.llamadas) == 6
-    assert r["respuesta"].strip() != ""
+    assert modelo.llamadas[-1]["tool_choice"] == {"type": "none"}
+    assert r["respuesta"] == "Resumen con lo que alcancé."
 
 
 def test_error_se_devuelve_al_modelo():

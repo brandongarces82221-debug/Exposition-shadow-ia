@@ -4,15 +4,20 @@ import time
 import uuid
 from datetime import datetime, timezone
 
+import os
+
 import boto3
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 SIETE_DIAS = 7 * 24 * 3600
 TURNOS_EN_MEMORIA = 10
 
 
 class Almacen:
-    def __init__(self, tabla_trabajos: str, tabla_conversaciones: str):
+    def __init__(self, tabla_trabajos: str, tabla_conversaciones: str, maximo_global: int | None = None):
+        # Tope de preguntas de todo el sistema por día: protege los créditos aunque alguien cambie de sesión
+        self.maximo_global = maximo_global or int(os.environ.get("MAX_PREGUNTAS_GLOBAL_DIA", "300"))
         db = boto3.resource("dynamodb")
         self.trabajos = db.Table(tabla_trabajos)
         self.conversaciones = db.Table(tabla_conversaciones)
@@ -25,6 +30,26 @@ class Almacen:
     def _clave_cuota(sesion: str) -> str:
         return f"cuota#{sesion}#{datetime.now(timezone.utc):%Y-%m-%d}"
 
+    def _sumar_si_cabe(self, clave: str, maximo: int) -> bool:
+        """Suma 1 al contador solo si no ha llegado al máximo (atómico en DynamoDB)."""
+        try:
+            self.trabajos.update_item(
+                Key={"trabajo_id": clave},
+                UpdateExpression="ADD usadas :uno SET expira = :e",
+                ConditionExpression="attribute_not_exists(usadas) OR usadas < :max",
+                ExpressionAttributeValues={":uno": 1, ":e": self._expira(), ":max": maximo},
+            )
+            return True
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                return False
+            raise
+
+    def reservar_cuota(self, sesion: str, maximo: int = 30) -> bool:
+        if not self._sumar_si_cabe(self._clave_cuota("global"), self.maximo_global):
+            return False
+        return self._sumar_si_cabe(self._clave_cuota(sesion), maximo)
+
     def crear_trabajo(self, sesion, conversacion, archivo, pregunta) -> str:
         trabajo_id = str(uuid.uuid4())
         self.trabajos.put_item(Item={
@@ -32,11 +57,6 @@ class Almacen:
             "pregunta": pregunta, "estado": "en_curso", "pasos": [], "respuesta": "",
             "creado": int(time.time()), "expira": self._expira(),
         })
-        self.trabajos.update_item(
-            Key={"trabajo_id": self._clave_cuota(sesion)},
-            UpdateExpression="ADD usadas :uno SET expira = :e",
-            ExpressionAttributeValues={":uno": 1, ":e": self._expira()},
-        )
         return trabajo_id
 
     def obtener(self, trabajo_id: str):

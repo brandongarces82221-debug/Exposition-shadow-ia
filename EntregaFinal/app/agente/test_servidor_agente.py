@@ -42,7 +42,7 @@ def test_error_de_bedrock_termina_en_error(tablas):
 def test_cuota_agotada(tablas):
     a = Almacen("trabajos", "conversaciones")
     for _ in range(30):
-        a.crear_trabajo("s1", "c9", "v.csv", "x")
+        a.reservar_cuota("s1")
     assert servidor.aceptar_pregunta(DATOS, a, lambda t: None)[0] == 429
 
 
@@ -55,3 +55,27 @@ def test_conversacion_de_otra_sesion(tablas):
 def test_pregunta_vacia(tablas):
     a = Almacen("trabajos", "conversaciones")
     assert servidor.aceptar_pregunta({**DATOS, "pregunta": "  "}, a, lambda t: None)[0] == 400
+
+
+def test_error_del_sandbox_conserva_el_detalle():
+    # I1: si el sandbox responde 400/500, el modelo debe ver el motivo, no solo el código HTTP
+    import json
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Falla(BaseHTTPRequestHandler):
+        def do_POST(self):
+            cuerpo = json.dumps({"error": "identificador inválido: 'x/y'"}).encode()
+            self.send_response(400)
+            self.send_header("Content-Length", str(len(cuerpo)))
+            self.end_headers()
+            self.wfile.write(cuerpo)
+
+        def log_message(self, *a):
+            pass
+
+    http = HTTPServer(("127.0.0.1", 0), Falla)
+    threading.Thread(target=http.serve_forever, daemon=True).start()
+    r = servidor.ClienteSandbox(f"http://127.0.0.1:{http.server_port}").ejecutar("s", "t", "a.csv", "print(1)")
+    http.shutdown()
+    assert r["ok"] is False and "identificador inválido" in r["stderr"]

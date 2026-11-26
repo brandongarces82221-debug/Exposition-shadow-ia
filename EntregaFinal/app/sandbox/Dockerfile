@@ -1,10 +1,9 @@
 FROM python:3.12-slim
 RUN pip install --no-cache-dir pandas matplotlib boto3 \
- && useradd --create-home --uid 1001 ejecutor \
- && python -c "import matplotlib.pyplot"
-ENV MPLCONFIGDIR=/tmp/mpl PYTHONUNBUFFERED=1
+ && for i in 1 2 3 4; do useradd --no-create-home --uid 100$i ejecutor$i; done
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY ejecutor.py servidor.py ./
-# El servidor corre como root solo para poder lanzar el código como el usuario "ejecutor" (sin privilegios)
+# El servidor corre como root solo para lanzar cada ejecución con un usuario sin privilegios (ejecutor1..4)
 EXPOSE 8080
 CMD ["python", "servidor.py"]

@@ -61,3 +61,49 @@ def test_no_deja_archivos_temporales():
     ejecutar("print(1)", b"v\n1\n")
     despues = set(os.listdir(tmp))
     assert not any(n.startswith("ejecucion-") for n in despues - antes)
+
+
+def test_salida_gigante_no_se_acumula():
+    # C1: una salida sin fin debe cortarse a tiempo sin acumularse en memoria
+    r = ejecutar("import sys\nwhile True: sys.stdout.write('x' * 10**6)", b"v\n1\n", timeout=3)
+    assert r["ok"] is False
+    assert len(r["stdout"]) <= 8000
+    assert r["segundos"] < 6
+
+
+def test_procesos_hijos_no_sobreviven(tmp_path):
+    # C2: un proceso lanzado por el código no debe seguir vivo después de la ejecución
+    marca = tmp_path / "sobrevivio.txt"
+    codigo = (
+        "import os, time\n"
+        "if os.fork() == 0:\n"
+        "    time.sleep(2)\n"
+        f"    open({str(marca)!r}, 'w').write('si')\n"
+        "    os._exit(0)\n"
+        "print('padre listo')\n"
+    )
+    r = ejecutar(codigo, b"v\n1\n", timeout=10)
+    assert r["ok"] is True and r["segundos"] < 5
+    import time
+    time.sleep(3)
+    assert not marca.exists()
+
+
+def test_csv_excel_con_miles_y_codigos():
+    # I4: miles con punto, decimal con coma, y códigos con cero inicial que deben seguir siendo texto
+    from ejecutor import leer_csv
+    df = leer_csv("ciudad;ventas;codigo\nBogotá;1.234,5;05001\nCali;2.000;76001\n".encode("cp1252"))
+    assert list(df["ventas"]) == [1234.5, 2000.0]
+    assert list(df["codigo"]) == ["05001", "76001"]
+
+
+def test_csv_punto_y_coma_con_punto_decimal():
+    from ejecutor import leer_csv
+    df = leer_csv(b"a;b\n1.5;x\n2;y\n")
+    assert list(df["a"]) == [1.5, 2.0]
+
+
+def test_csv_excel_cp1252():
+    from ejecutor import leer_csv
+    df = leer_csv("nombre;v\n“Ana”;1\n".encode("cp1252"))
+    assert df["nombre"][0] == "“Ana”"

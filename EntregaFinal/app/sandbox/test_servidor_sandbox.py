@@ -39,3 +39,19 @@ def test_resumen(s3):
 def test_rechaza_rutas_raras(s3):
     with pytest.raises(ValueError):
         servidor.procesar_resumen(s3, BUCKET, {"sesion": "s1", "archivo": "../otra/v.csv"})
+
+
+def test_grafica_con_tilde_y_espacios(s3):
+    # I1: nombres como 'ventas_por_año.png' son normales en español y no deben romper la ejecución
+    s3.put_object(Bucket=BUCKET, Key="datasets/s1/v.csv", Body=b"v\n1\n")
+    codigo = "import matplotlib.pyplot as plt\nplt.plot([1])\nplt.savefig('salida/ventas por año.png')\nprint(42)"
+    r = servidor.procesar_ejecucion(s3, BUCKET, {"sesion": "s1", "trabajo": "t1", "archivo": "v.csv", "codigo": codigo})
+    assert r["ok"] is True and "42" in r["stdout"]
+    assert r["imagenes"] == ["resultados/s1/t1/ventas_por_a_o.png"]
+
+
+def test_rechaza_llamadas_desde_el_propio_contenedor():
+    # C2 (agravante): el código del usuario no debe poder llamar al servidor por 127.0.0.1
+    assert servidor.origen_permitido("10.20.0.15") is True
+    assert servidor.origen_permitido("127.0.0.1") is False
+    assert servidor.origen_permitido("::1") is False

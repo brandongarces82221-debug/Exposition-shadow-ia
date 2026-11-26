@@ -31,8 +31,12 @@ class ClienteSandbox:
             with urllib.request.urlopen(req, timeout=60) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
-            return json.loads(e.read() or b"{}") | {"ok": False, "stdout": "",
-                                                     "stderr": f"El sandbox respondió {e.code}", "imagenes": []}
+            try:
+                detalle = json.loads(e.read() or b"{}").get("error", "")
+            except ValueError:
+                detalle = ""
+            return {"ok": False, "stdout": "", "imagenes": [], "error": detalle,
+                    "stderr": f"El sandbox respondió {e.code}: {detalle}".strip(": ")}
 
     def resumen(self, sesion, archivo) -> str:
         r = self._post("/resumen", {"sesion": sesion, "archivo": archivo})
@@ -55,10 +59,10 @@ def aceptar_pregunta(datos: dict, almacen: Almacen, lanzar):
         almacen.historial(datos["conversacion"], datos["sesion"])
     except PermissionError:
         return 403, {"error": "Esa conversación no es tuya"}
-    if almacen.contar_hoy(datos["sesion"]) >= MAX_POR_DIA:
-        return 429, {"error": f"Llegaste al límite de {MAX_POR_DIA} preguntas por día"}
     if almacen.contar_turnos(datos["conversacion"]) >= MAX_TURNOS:
         return 429, {"error": f"Esta conversación llegó a {MAX_TURNOS} preguntas; sube el CSV de nuevo para empezar otra"}
+    if not almacen.reservar_cuota(datos["sesion"], MAX_POR_DIA):
+        return 429, {"error": "Se alcanzó el límite de preguntas de hoy. Intenta mañana."}
     trabajo = almacen.crear_trabajo(datos["sesion"], datos["conversacion"], datos["archivo"], pregunta)
     lanzar(trabajo)
     return 202, {"trabajo": trabajo}

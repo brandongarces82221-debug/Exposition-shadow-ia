@@ -8,7 +8,12 @@ const estado = { sesion: obtenerSesion(), conversacion: null, archivo: null, ocu
 
 function nuevoId() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return "xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx".replace(/x/g, () => ((Math.random() * 16) | 0).toString(16));
+  // El sitio de S3 se sirve por http, donde randomUUID no existe; getRandomValues sí
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
 function obtenerSesion() {
@@ -56,7 +61,7 @@ async function pedir(ruta, opciones = {}) {
 }
 
 function mensajeDeError(codigo, cuerpo) {
-  if (codigo === 429) return cuerpo.error || "Llegaste al límite de preguntas. Intenta más tarde.";
+  if (codigo === 429) return cuerpo.error || "Hay muchas personas preguntando a la vez. Espera unos segundos e intenta de nuevo.";
   if (codigo === 403) return "Esa conversación pertenece a otra sesión. Sube el CSV de nuevo para empezar.";
   return cuerpo.error || `Algo falló (código ${codigo}). Intenta de nuevo.`;
 }
@@ -126,6 +131,7 @@ async function seguirTrabajo(trabajo, burbuja) {
     } catch (e) {
       continue; // fallo de red momentáneo: se reintenta
     }
+    if (r.codigo === 429 || r.codigo >= 500) continue; // API ocupada en un pico: se reintenta en la próxima vuelta
     if (r.codigo !== 200) {
       final.className = "respuesta paso error";
       final.textContent = mensajeDeError(r.codigo, r.cuerpo);

@@ -32,6 +32,24 @@ def test_historial_de_otra_sesion(tablas):
 def test_cuota_diaria(tablas):
     a = Almacen("trabajos", "conversaciones")
     assert a.contar_hoy("s1") == 0
-    a.crear_trabajo("s1", "c1", "v.csv", "a")
-    a.crear_trabajo("s1", "c1", "v.csv", "b")
+    a.reservar_cuota("s1")
+    a.reservar_cuota("s1")
     assert a.contar_hoy("s1") == 2
+
+
+def test_cuota_atomica_con_concurrencia(tablas):
+    # I3: con la cuota en 29, de 20 pedidos simultáneos solo uno puede pasar
+    from concurrent.futures import ThreadPoolExecutor
+    a = Almacen("trabajos", "conversaciones")
+    for _ in range(29):
+        assert a.reservar_cuota("s1") is True
+    with ThreadPoolExecutor(20) as ex:
+        resultados = list(ex.map(lambda _: a.reservar_cuota("s1"), range(20)))
+    assert resultados.count(True) == 1
+    assert a.contar_hoy("s1") == 30
+
+
+def test_cuota_global_diaria(tablas):
+    # I3: cambiar de sesión no evita el tope global del día
+    a = Almacen("trabajos", "conversaciones", maximo_global=3)
+    assert [a.reservar_cuota(f"s{i}") for i in range(5)] == [True, True, True, False, False]

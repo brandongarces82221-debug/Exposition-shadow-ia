@@ -14,8 +14,9 @@ resource "aws_apigatewayv2_stage" "defecto" {
   name        = "$default"
   auto_deploy = true
   default_route_settings {
-    throttling_rate_limit  = 10
-    throttling_burst_limit = 20
+    # ~0,7 solicitudes/s por persona con una pregunta en curso: 50/s alcanza para un salón de 30 a la vez
+    throttling_rate_limit  = 50
+    throttling_burst_limit = 100
   }
 }
 

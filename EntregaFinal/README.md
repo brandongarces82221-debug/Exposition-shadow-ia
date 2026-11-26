@@ -73,7 +73,7 @@ luego los endpoints de VPC, el VPC Link y por último la VPC.
 ## Límites para que nadie gaste de más
 
 30 preguntas por sesión al día, 20 por conversación, 6 vueltas del agente por pregunta, 30 s por ejecución,
-CSV de máximo 10 MB, API limitada a 10 solicitudes/s, datos borrados a los 7 días.
+CSV de máximo 10 MB, API limitada a 50 solicitudes/s, máximo 300 preguntas al día en total, datos borrados a los 7 días.
 
 ## Riesgos conocidos
 

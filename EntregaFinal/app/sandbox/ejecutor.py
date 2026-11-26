@@ -3,13 +3,17 @@
 No usa red ni AWS: recibe el código y los bytes del CSV, y devuelve la salida y las gráficas.
 El aislamiento de red lo da la subred privada; aquí se limita el proceso:
 - subproceso con entorno vacío (sin credenciales del contenedor),
-- tiempo máximo, límite de memoria y usuario sin privilegios (dentro del contenedor),
+- tiempo máximo, límites de memoria, de tamaño de archivo y de procesos,
+- salida a archivos con tope (nunca se acumula en la memoria del servidor),
+- dentro del contenedor: un usuario sin privilegios por cupo, y al terminar se matan todos sus procesos,
 - directorio temporal propio que se borra al terminar.
 """
 
 import io
 import os
+import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -19,7 +23,9 @@ import pandas as pd
 
 MAX_SALIDA = 8000
 MEMORIA_MAX = 768 * 1024 * 1024
-USUARIO_SIN_PRIVILEGIOS = "ejecutor"
+ARCHIVO_MAX = 20 * 1024 * 1024  # ningún archivo escrito por el código puede pasar de 20 MB
+PROCESOS_MAX = 64
+USUARIO_POR_DEFECTO = "ejecutor1"
 
 
 def _recortar(texto: str) -> str:
@@ -29,52 +35,104 @@ def _recortar(texto: str) -> str:
     return texto[: MAX_SALIDA - len(aviso)] + aviso
 
 
-def _limitar_proceso():
-    try:
+def _leer_inicio(ruta: str) -> str:
+    with open(ruta, "rb") as f:
+        return f.read(MAX_SALIDA * 4).decode("utf-8", "replace")
+
+
+def _es_root() -> bool:
+    return hasattr(os, "getuid") and os.getuid() == 0
+
+
+def _limites(con_usuario: bool):
+    def aplicar():
         import resource
 
-        resource.setrlimit(resource.RLIMIT_AS, (MEMORIA_MAX, MEMORIA_MAX))
-    except (ImportError, ValueError, OSError):
-        pass  # macOS no siempre permite RLIMIT_AS; en el contenedor (Linux) sí aplica
+        for limite, valor in ((resource.RLIMIT_AS, MEMORIA_MAX), (resource.RLIMIT_FSIZE, ARCHIVO_MAX)):
+            try:
+                resource.setrlimit(limite, (valor, valor))
+            except (ValueError, OSError):
+                pass  # macOS no permite RLIMIT_AS; en el contenedor (Linux) sí aplica
+        if con_usuario:
+            # Solo con usuario propio: el límite cuenta todos los procesos de ese usuario
+            resource.setrlimit(resource.RLIMIT_NPROC, (PROCESOS_MAX, PROCESOS_MAX))
+
+    return aplicar
 
 
-def ejecutar(codigo: str, csv_bytes: bytes, timeout: int = 30) -> dict:
+def _matar_restos(pgid: int, usuario):
+    """Mata los procesos que el código dejó vivos (por grupo y, en el contenedor, por usuario)."""
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+    if usuario:
+        # Un hijo con el uid del cupo hace kill(-1): alcanza a todo lo de ese usuario, incluso con setsid
+        import pwd
+
+        info = pwd.getpwnam(usuario)
+        pid = os.fork()
+        if pid == 0:
+            try:
+                os.setgid(info.pw_gid)
+                os.setuid(info.pw_uid)
+                os.kill(-1, signal.SIGKILL)
+            finally:
+                os._exit(0)
+        os.waitpid(pid, 0)
+
+
+def ejecutar(codigo: str, csv_bytes: bytes, timeout: int = 30, usuario: str | None = None) -> dict:
     directorio = tempfile.mkdtemp(prefix="ejecucion-")
     salida = os.path.join(directorio, "salida")
     os.makedirs(salida)
     with open(os.path.join(directorio, "entrada.csv"), "wb") as f:
         f.write(csv_bytes)
 
+    usuario = (usuario or USUARIO_POR_DEFECTO) if _es_root() else None
     extra = {}
-    if hasattr(os, "getuid") and os.getuid() == 0:
-        # Dentro del contenedor: el código corre como un usuario sin privilegios
-        shutil.chown(directorio, USUARIO_SIN_PRIVILEGIOS)
-        shutil.chown(salida, USUARIO_SIN_PRIVILEGIOS)
-        extra["user"] = USUARIO_SIN_PRIVILEGIOS
+    if usuario:
+        os.chmod(directorio, 0o700)
+        shutil.chown(directorio, usuario, usuario)
+        shutil.chown(salida, usuario, usuario)
+        extra = {"user": usuario, "group": usuario, "extra_groups": []}
 
+    # La salida va a archivos fuera del directorio del código, así el código no puede reemplazarlos
+    out = tempfile.NamedTemporaryFile(prefix="salida-", delete=False)
+    err = tempfile.NamedTemporaryFile(prefix="error-", delete=False)
     inicio = time.monotonic()
+    proc = subprocess.Popen(
+        [sys.executable, "-I", "-c", codigo],
+        cwd=directorio,
+        env={"PATH": "/usr/local/bin:/usr/bin:/bin", "MPLBACKEND": "Agg", "HOME": directorio},
+        stdin=subprocess.DEVNULL, stdout=out, stderr=err,
+        start_new_session=True,
+        preexec_fn=_limites(bool(usuario)),
+        **extra,
+    )
+    out.close()
+    err.close()
+    agotado = False
     try:
-        proc = subprocess.run(
-            [sys.executable, "-I", "-c", codigo],
-            cwd=directorio,
-            env={"PATH": "/usr/local/bin:/usr/bin:/bin", "MPLBACKEND": "Agg", "HOME": directorio},
-            capture_output=True,
-            timeout=timeout,
-            preexec_fn=_limitar_proceso,
-            **extra,
-        )
-        ok = proc.returncode == 0
-        stdout = proc.stdout.decode("utf-8", "replace")
-        stderr = proc.stderr.decode("utf-8", "replace")
-    except subprocess.TimeoutExpired as e:
-        ok = False
-        stdout = (e.stdout or b"").decode("utf-8", "replace")
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        agotado = True
+    _matar_restos(proc.pid, usuario)
+    proc.wait()
+
+    stdout = _leer_inicio(out.name)
+    stderr = _leer_inicio(err.name)
+    os.unlink(out.name)
+    os.unlink(err.name)
+    if agotado:
         stderr = f"Se superó el tiempo máximo de {timeout} s y la ejecución se detuvo."
+    ok = not agotado and proc.returncode == 0
 
     imagenes = []
     for nombre in sorted(os.listdir(salida)):
-        if nombre.lower().endswith(".png"):
-            with open(os.path.join(salida, nombre), "rb") as f:
+        ruta = os.path.join(salida, nombre)
+        if nombre.lower().endswith(".png") and os.path.isfile(ruta) and not os.path.islink(ruta):
+            with open(ruta, "rb") as f:
                 imagenes.append((nombre, f.read()))
 
     shutil.rmtree(directorio, ignore_errors=True)
@@ -87,9 +145,28 @@ def ejecutar(codigo: str, csv_bytes: bytes, timeout: int = 30) -> dict:
     }
 
 
+# Números con formato colombiano (1.234,5) o internacional (1234.5)
+EUROPEO = r"-?(\d{1,3}(\.\d{3})+|\d+)(,\d+)?"
+SIMPLE = r"-?\d+(\.\d+)?"
+
+
+def _a_numero(serie: pd.Series, sep: str) -> pd.Series:
+    valores = serie.dropna().str.strip()
+    if valores.empty or valores.str.match(r"-?0\d").any():
+        return serie  # vacía, o códigos con cero inicial (DANE, NIT): se dejan como texto
+    formatos = ["europeo", "simple"] if sep == ";" else ["simple"]
+    for formato in formatos:
+        if formato == "europeo" and valores.str.fullmatch(EUROPEO).all():
+            limpio = serie.str.strip().str.replace(".", "", regex=False).str.replace(",", ".", regex=False)
+            return pd.to_numeric(limpio)
+        if formato == "simple" and valores.str.fullmatch(SIMPLE).all():
+            return pd.to_numeric(serie.str.strip())
+    return serie
+
+
 def leer_csv(csv_bytes: bytes) -> pd.DataFrame:
-    """Lee un CSV adivinando separador (, ; tab) y codificación (utf-8 o latin-1)."""
-    for codificacion in ("utf-8", "latin-1"):
+    """Lee un CSV adivinando separador (, ; tab), codificación (utf-8 o cp1252 de Excel) y formato de números."""
+    for codificacion in ("utf-8-sig", "cp1252", "latin-1"):
         try:
             texto = csv_bytes.decode(codificacion)
             break
@@ -97,8 +174,10 @@ def leer_csv(csv_bytes: bytes) -> pd.DataFrame:
             continue
     primera = texto.splitlines()[0] if texto else ""
     sep = max([",", ";", "\t"], key=primera.count)
-    decimal = "," if sep == ";" else "."
-    return pd.read_csv(io.StringIO(texto), sep=sep, decimal=decimal)
+    df = pd.read_csv(io.StringIO(texto), sep=sep, dtype=str, keep_default_na=True)
+    for columna in df.columns:
+        df[columna] = _a_numero(df[columna], sep)
+    return df
 
 
 def resumen_csv(csv_bytes: bytes) -> str:
