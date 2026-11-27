@@ -20,10 +20,9 @@ Si entiendes este cuadro, entiendes toda la exposición:
 |---|---|---|---|
 | 1 | El problema | Todos usamos IA con información sensible, y además se puede atacar con palabras. | 3 |
 | 2 | Cómo funciona | Para el modelo, las reglas y los datos son el mismo texto; por eso se le engaña. | 6 |
-| 3 | Demo | El curso ataca a Uni: sin protección cae, con guardrails resiste mucho mejor. | 5,5 |
-| 4 | Qué aprendimos | Fue un despliegue cloud real, y la defensa son capas: filtros y diseño. | 3 |
-| 5 | Caso real y riesgos | Samsung lo vivió; prohibir no basta y hay datos que nunca se comparten. | 3,5 |
-| 6 | Postura | La universidad debe habilitar la IA con reglas, filtros, humanos y práctica. | 1,5 |
+| 3 | Caso real y riesgos | El ataque con palabras ya pasó (espías engañaron a Claude Code); prohibir no basta y hay datos que nunca se comparten. | 3,5 |
+| 4 | Demo | El curso ataca a Uni: sin protección cae, con guardrails resiste mucho mejor. | 5,5 |
+| 5 | Cierre | Ninguna capa basta sola; mi postura: habilitar con reglas. ¿IA más segura o usuarios mejor preparados? | 1 |
 
 **La tesis de toda la exposición (apréndela de memoria):**
 > "Para una IA, las instrucciones y los datos son el mismo texto. Por eso se puede engañar con palabras, y por eso la defensa no puede ser una sola capa: hacen falta filtros, buen diseño y personas preparadas."
@@ -42,17 +41,14 @@ Una palabra o frase por diapositiva. Repítela en orden hasta que te salga sola:
  5 Inyección       →  directa vs escondida · OWASP n.º 1
  6 Técnicas        →  autoridad · rol · disfraz · anular
  7 Agentes         →  dice vs hace
- 8 DEMO            →  QR · ronda 1 · ronda 2 · correo
- 9 Arquitectura    →  EC2 → guardrail → Haiku → guardrail · Terraform
-10 Capas           →  3 filtros + 3 de diseño
-11 Caso real       →  Samsung 2023
-12 Shadow AI       →  prohibir o habilitar · señal de demanda
-13 Nunca pegar     →  4 cosas · WhatsApp de 500
-14 Propuesta       →  habilitar · clasificar · guardrails · humano · practicar · revisar
-15 Cierre          →  ¿IA segura o usuarios preparados?
+ 8 Caso real       →  "somos de seguridad" · 80–90 % · una mentira
+ 9 Shadow AI       →  prohibir o habilitar · señal de demanda
+10 Nunca pegar     →  4 cosas · WhatsApp de 500
+11 DEMO            →  QR · ronda 1 · ronda 2 · correo
+12 Cierre          →  ninguna capa basta sola · habilitar con reglas · ¿IA segura o usuarios preparados?
 ```
 
-**Truco para la propuesta (diapositiva 14):** las iniciales **H-C-G-H-P-R** → "**H**ay **C**osas **G**randes **H**oy **P**ara **R**evisar".
+**Truco para tu postura (la dices en el cierre, diapositiva 12):** las iniciales **H-C-G-H-P-R** → "**H**ay **C**osas **G**randes **H**oy **P**ara **R**evisar".
 
 **Truco para las técnicas (diapositiva 6):** "**A**l **R**ector lo **D**isfrazaron **A**nulando" → **A**utoridad, **R**ol, **D**isfraz, **A**nular.
 
@@ -103,7 +99,46 @@ Una palabra o frase por diapositiva. Repítela en orden hasta que te salga sola:
 - *"¿Por qué no basta con decirle al modelo 'nunca obedezcas al usuario'?"* → "Porque esa regla también es texto, y otro texto la puede contradecir o confundir. No hay una jerarquía que el modelo garantice al 100%. Por eso se ponen defensas por fuera del modelo."
 - *"¿En qué se diferencia de hackear un software normal?"* → "En el software normal explotas un error del código. Aquí no hay error: el sistema funciona como fue diseñado, solo que interpreta texto como órdenes. Además, el resultado es probabilístico: el mismo ataque puede funcionar una vez y la siguiente no."
 
-### Sección 3 · La demo
+### Sección 3 · Caso real y riesgos
+
+**Debes poder explicar sin diapositivas:**
+- El **caso real (septiembre de 2025)**, en cuatro partes:
+  - **Contexto:** Claude Code es un agente de Anthropic que escribe y ejecuta código; tiene filtros para no ayudar a hackear.
+  - **Engaño:** un grupo atribuido al Estado chino se hizo pasar por una empresa de ciberseguridad haciendo pruebas defensivas y partió el ataque en tareas pequeñas que parecían inocentes.
+  - **Ataque:** la IA hizo el 80–90 % sola (reconocimiento, código para explotar, robo de contraseñas, extracción de datos) contra unas 30 organizaciones; funcionó en un pequeño número de casos. Los humanos tomaron 4 a 6 decisiones.
+  - **Respuesta:** Anthropic investigó 10 días, bloqueó cuentas, avisó a víctimas y autoridades, mejoró sus detectores y publicó el caso.
+- Por qué conecta con tu tesis: no usaron código, usaron una mentira (todo es texto + juego de roles + agentes).
+- El matiz honesto: la fuente es Anthropic y algunos expertos dudaron de cuánta autonomía tuvo la IA. No se sabe a quién atacaron.
+- El dilema **prohibir o habilitar**, con argumentos de ambos lados.
+- Las **cuatro cosas** que nunca se pegan en un chatbot público.
+- Qué es la **Ley 1581 de 2012** y quién la vigila (la SIC).
+
+**El dilema, con argumentos:**
+
+| Prohibir | Habilitar |
+|---|---|
+| ✔ Control inmediato | ✔ La gente usa una herramienta con reglas y visibilidad |
+| ✔ Sin costo de licencias | ✔ Aprovecha la productividad de la IA |
+| ✘ El uso se va al celular personal, sin visibilidad | ✘ Cuesta dinero (licencias) |
+| ✘ La organización se queda atrás | ✘ Requiere políticas y capacitación |
+
+**Tu postura:** habilitar con reglas, porque prohibir solo esconde el problema.
+
+### Tu postura (ya no tiene diapositiva: la dices en el cierre)
+
+**Debes poder decir los seis puntos de memoria** (truco H-C-G-H-P-R):
+1. **H**abilitar, no prohibir.
+2. **C**lasificar los datos con un semáforo.
+3. **G**uardrails en todo asistente propio.
+4. **H**umano en el ciclo para acciones.
+5. **P**racticar: capacitar con demos como la de hoy.
+6. **R**evisar la política cada semestre.
+
+**Si te preguntan "¿y eso no es muy caro?":** "Una licencia institucional cuesta, pero mucho menos que una fuga de datos personales sancionada bajo la Ley 1581, sin contar el daño a la reputación."
+
+---
+
+### Sección 4 · La demo (va al final)
 
 **Debes poder explicar sin diapositivas:**
 - Qué es Uni y cuál es el reto (sacarle el código `DRAGON-7731`).
@@ -122,7 +157,9 @@ Una palabra o frase por diapositiva. Repítela en orden hasta que te salga sola:
 | El guardrail bloqueó algo inocente | "Esto se llama **falso positivo**: el filtro se equivocó para el lado seguro. Es el costo de un filtro estricto: equilibrar seguridad y utilidad." |
 | AWS no responde | Pasar al modo simulado (MOCK) y explicarlo con naturalidad. |
 
-### Sección 4 · Qué aprendimos (arquitectura y capas)
+### Lo que aprendimos: las capas (las dices en el cierre), y cómo está montada la demo
+
+*Ni la arquitectura ni las capas tienen diapositiva, pero te las pueden preguntar: apréndete el recorrido.*
 
 **Debes poder explicar sin diapositivas:** el recorrido completo de un mensaje y las seis capas.
 
@@ -146,39 +183,6 @@ Celular ──► EC2 t3.micro (VPC por defecto, app en Python)
 | 6 | Humano en el ciclo | Diseño | Una persona aprueba antes de pagar, borrar o enviar. |
 
 **Frase clave:** "Defensa en profundidad: ninguna capa es perfecta, pero juntas hacen que el ataque sea mucho más difícil. Igual que un antivirus más un firewall más una contraseña fuerte."
-
-### Sección 5 · Caso real y riesgos
-
-**Debes poder explicar sin diapositivas:**
-- El caso **Samsung 2023**: qué pasó (código y notas en ChatGPT) y qué hizo la empresa (prohibir).
-- El dilema **prohibir o habilitar**, con argumentos de ambos lados.
-- Las **cuatro cosas** que nunca se pegan en un chatbot público.
-- Qué es la **Ley 1581 de 2012** y quién la vigila (la SIC).
-
-**El dilema, con argumentos:**
-
-| Prohibir | Habilitar |
-|---|---|
-| ✔ Control inmediato | ✔ La gente usa una herramienta con reglas y visibilidad |
-| ✔ Sin costo de licencias | ✔ Aprovecha la productividad de la IA |
-| ✘ El uso se va al celular personal, sin visibilidad | ✘ Cuesta dinero (licencias) |
-| ✘ La organización se queda atrás | ✘ Requiere políticas y capacitación |
-
-**Tu postura:** habilitar con reglas, porque prohibir solo esconde el problema.
-
-### Sección 6 · Postura
-
-**Debes poder decir los seis puntos de memoria** (truco H-C-G-H-P-R):
-1. **H**abilitar, no prohibir.
-2. **C**lasificar los datos con un semáforo.
-3. **G**uardrails en todo asistente propio.
-4. **H**umano en el ciclo para acciones.
-5. **P**racticar: capacitar con demos como la de hoy.
-6. **R**evisar la política cada semestre.
-
-**Si te preguntan "¿y eso no es muy caro?":** "Una licencia institucional cuesta, pero mucho menos que una fuga de datos personales sancionada bajo la Ley 1581, sin contar el daño a la reputación."
-
----
 
 ## 4. La demo por dentro (preguntas técnicas)
 
@@ -262,7 +266,8 @@ No inventes. Usa una de estas fórmulas:
 |---|---|
 | Riesgo n.º 1 de OWASP para aplicaciones con LLM | Inyección de prompts (LLM01) |
 | Ley de protección de datos personales en Colombia | Ley 1581 de 2012 (la vigila la SIC) |
-| Caso Samsung | 2023: código fuente y notas en ChatGPT → prohibió herramientas externas |
+| Caso real | Septiembre 2025 (publicado el 13 nov. 2025): espías engañaron a Claude Code → ~30 organizaciones, la IA hizo el 80–90 %, 4 a 6 decisiones humanas |
+| Catálogo MITRE ATT&CK | Campaña C0062 |
 | Código secreto de la demo | `DRAGON-7731` (ficticio) |
 | Máquina de la demo | EC2 t3.micro, Amazon Linux 2023, VPC por defecto, puerto 80 |
 | Modelo | Claude Haiku 4.5 en Amazon Bedrock |
@@ -296,10 +301,6 @@ No inventes. Usa una de estas fórmulas:
 ## 8. Lista de verificación final
 
 **Contenido (antes del día):**
-- [ ] Caso Samsung verificado en una fuente confiable.
-- [ ] Caso de América Latina agregado o la tarjeta eliminada.
-- [ ] Dos fuentes adicionales en la diapositiva 15.
-- [ ] Tu nombre y la fecha en la portada.
 - [ ] Ensayo real en AWS hecho y el QR probado con un celular.
 
 **El día:**
@@ -319,9 +320,9 @@ No inventes. Usa una de estas fórmulas:
 | Criterio | Peso | Dónde lo cubres | Qué no puede faltar |
 |---|---|---|---|
 | Claridad conceptual | 20% | Diapositivas 4 a 7 | La analogía del empleado nuevo y "todo es texto" |
-| Datos y fuentes | 15% | Diapositivas 5, 11, 13 y 15 | OWASP, Ley 1581, Samsung y 2 fuentes propias |
-| Caso real | 15% | Diapositiva 11 | Samsung bien contado (+ América Latina si lo tienes) |
-| Demo o actividad | 20% | Diapositiva 8 y la página | Que el curso participe y vea la diferencia entre rondas |
-| Análisis crítico y ética | 15% | Diapositivas 10 y 12 | "Ninguna capa basta sola" y el dilema prohibir o habilitar |
-| Postura y cierre | 10% | Diapositivas 14 y 15 | Los seis puntos y la pregunta de debate |
-| Tiempo y presentación | 5% | Todo | Terminar en unos 22 minutos y responder con calma |
+| Datos y fuentes | 15% | Diapositivas 5, 8, 10 y 12 | OWASP, Ley 1581, Anthropic (13 nov. 2025) y MITRE ATT&CK C0062 |
+| Caso real | 15% | Diapositiva 8 | El ataque con Claude Code: contexto, engaño, ataque y respuesta |
+| Demo o actividad | 20% | Diapositiva 11 y la página | Que el curso participe y vea la diferencia entre rondas |
+| Análisis crítico y ética | 15% | Diapositiva 9 y el cierre | El dilema prohibir o habilitar y "ninguna capa basta sola" (dicho en el cierre) |
+| Postura y cierre | 10% | Diapositiva 12 (en voz alta) | Tu postura en pocas frases y la pregunta de debate |
+| Tiempo y presentación | 5% | Todo | Terminar en unos 19 minutos y responder con calma |

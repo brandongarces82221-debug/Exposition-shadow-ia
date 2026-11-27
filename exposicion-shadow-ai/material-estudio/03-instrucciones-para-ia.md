@@ -16,6 +16,8 @@ Lee este archivo completo antes de hacer cualquier cambio. Resume el contexto, l
 2. **Simple:** usar la **VPC por defecto**; no crear VPC, subredes, NAT ni balanceadores. "Solo es una demo."
 3. **"Que solo sea levantarlo y que funcione":** un `terraform apply` debe dejar todo funcionando sin pasos manuales (salvo habilitar el modelo en Bedrock).
 4. Infraestructura con **Terraform** (cuando el usuario dijo "tesseract" se refería a Terraform).
+5. **La demo va al final** de la exposición y **las diapositivas no explican cómo se construyó la demo** (no hay diapositiva de arquitectura). La arquitectura queda solo en la guía de estudio por si preguntan.
+6. **No hay diapositiva de postura ni de "lo que vimos en la demo"** (el usuario las quitó). La postura y la lección de las capas se dicen en voz alta en el cierre (diapositiva 12), porque la rúbrica da un 10 % a "Postura y cierre".
 
 ## Estructura del repo
 
@@ -27,7 +29,8 @@ README.md                               Índice del repo
 exposicion-shadow-ai/
   README.md                             Portada de la exposición
   7 Temas de Exposición_ ... .docx      Guía del profesor (fuente de los requisitos)
-  presentacion/diapositivas.html        Las 15 diapositivas, se abren sin conexión (← → para avanzar, N para notas)
+  presentacion/diapositivas.html        Las 12 diapositivas, se abren sin conexión (← → para avanzar, N para notas)
+  presentacion/diapositivas.pptx        Las mismas 12 diapositivas en PowerPoint (las genera presentacion/construir_pptx.js con pptxgenjs)
   presentacion/fuente/                  Archivos fuente del deck (deck.json, deck.css, slides/*.html)
   demo-aws/
     README.md                           Cómo levantar, costos, guion de la demo, fallas comunes
@@ -64,7 +67,7 @@ exposicion-shadow-ai/
 
 ## Diapositivas
 
-- 15 diapositivas en un artefacto de Claude (privado): https://claude.ai/artifact/28BiHkCTfJozDXuNq4vouv
+- 12 diapositivas en un artefacto de Claude (privado): https://claude.ai/artifact/28BiHkCTfJozDXuNq4vouv
 - Solo puede verlo o editarlo la cuenta del dueño, salvo que lo comparta desde **Share**. Si no tienes acceso, pide al usuario una exportación a PDF o PowerPoint.
 - El guion (`01-guion-exposicion.md`) sigue el orden y el contenido de esas diapositivas.
 
@@ -83,10 +86,7 @@ exposicion-shadow-ai/
 **Pendiente del usuario:**
 1. ~~Habilitar el modelo~~: Claude Haiku 4.5 ya está habilitado y probado en la cuenta (responde por `bedrock-runtime`).
 2. Ensayo real en AWS (ver los riesgos abajo).
-3. Caso de América Latina para la diapositiva 11 (verificado; no inventarlo).
-4. Dos fuentes adicionales para la diapositiva 15.
-5. Verificar el caso Samsung 2023 en la fuente original.
-6. Su nombre y la fecha en la portada.
+3. ~~Caso real y dos fuentes adicionales~~: el usuario eligió un solo caso con contexto, repercusiones y acciones: la campaña de espionaje con Claude Code (GTG-1002), verificada en anthropic.com/news/disrupting-AI-espionage (13 nov. 2025) y en MITRE ATT&CK C0062. Se descartaron Samsung, el juez de Cartagena (T-323 de 2024) y Salesloft Drift (este último no tenía relación con el tema). Las dos fuentes están en la diapositiva 12.
 
 ## Riesgos conocidos y cómo depurar
 
